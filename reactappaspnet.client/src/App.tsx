@@ -48,7 +48,7 @@ function App() {
 
   return (
     <div>
-      <h1 id="tabelLabel">Products Demo App</h1>
+      <h1 id="tabelLabel">Products Demo App1</h1>
       <p>This component demonstrates fetching data from the server.</p>
       {contents}
     </div>

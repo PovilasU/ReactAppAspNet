@@ -18,6 +18,7 @@ namespace ReactAppAspNet.Server.Controllers
             _configuration = configuration;
         }
 
+        // GET: api/Products
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Product>>> Get()
         {
@@ -45,6 +46,73 @@ namespace ReactAppAspNet.Server.Controllers
             }
 
             return products;
+        }
+
+        // POST: api/Products
+        [HttpPost]
+        public async Task<ActionResult<Product>> Post(Product product)
+        {
+            using (var connection = new MySqlConnection(_configuration.GetConnectionString("DefaultConnection")))
+            {
+                await connection.OpenAsync();
+
+                using (var command = new MySqlCommand("INSERT INTO products (Name, Price) VALUES (@Name, @Price);", connection))
+                {
+                    command.Parameters.AddWithValue("@Name", product.Name);
+                    command.Parameters.AddWithValue("@Price", product.Price);
+
+                    await command.ExecuteNonQueryAsync();
+
+                    product.Id = (int)command.LastInsertedId;
+                }
+            }
+
+            return CreatedAtAction(nameof(Get), new { id = product.Id }, product);
+        }
+
+        // PUT: api/Products/5
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Put(int id, Product product)
+        {
+            if (id != product.Id)
+            {
+                return BadRequest();
+            }
+
+            using (var connection = new MySqlConnection(_configuration.GetConnectionString("DefaultConnection")))
+            {
+                await connection.OpenAsync();
+
+                using (var command = new MySqlCommand("UPDATE products SET Name = @Name, Price = @Price WHERE Id = @Id;", connection))
+                {
+                    command.Parameters.AddWithValue("@Id", product.Id);
+                    command.Parameters.AddWithValue("@Name", product.Name);
+                    command.Parameters.AddWithValue("@Price", product.Price);
+
+                    await command.ExecuteNonQueryAsync();
+                }
+            }
+
+            return NoContent();
+        }
+
+        // DELETE: api/Products/5
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(int id)
+        {
+            using (var connection = new MySqlConnection(_configuration.GetConnectionString("DefaultConnection")))
+            {
+                await connection.OpenAsync();
+
+                using (var command = new MySqlCommand("DELETE FROM products WHERE Id = @Id;", connection))
+                {
+                    command.Parameters.AddWithValue("@Id", id);
+
+                    await command.ExecuteNonQueryAsync();
+                }
+            }
+
+            return NoContent();
         }
     }
 }
